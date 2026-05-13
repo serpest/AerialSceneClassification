@@ -6,6 +6,8 @@ import cv2
 import joblib
 from matplotlib import pyplot as plt
 import numpy as np
+from joblib import Parallel, delayed
+from sklearn.base import clone
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.linear_model import LogisticRegression
@@ -14,7 +16,7 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
 
-from bow_classification import DescriptorsExtractor, DescriptorsExtractor, VisualWordsHistogramComputer
+from bow_classification import DescriptorsExtractor, VisualWordsHistogramComputer
 from build_vocabularies import VISUAL_WORDS_CONFIGS, load_visual_words
 
 
@@ -125,8 +127,9 @@ def build_classifiers(bow_method: str, bow_normalization: str, bow_clusters: int
         for train_index, test_index in STRATIFIED_K_FOLD.split(X, y):
             X_train, X_test = X[train_index], X[test_index]
             y_train, y_test = y[train_index], y[test_index]
-            classifier.fit(X_train, y_train)
-            evaluations.append(evaluate_classifier_fold(classifier, X_test, y_test))
+            fold_classifier = clone(classifier)
+            fold_classifier.fit(X_train, y_train)
+            evaluations.append(evaluate_classifier_fold(fold_classifier, X_test, y_test))
         classifier_performances = pd.concat([classifier_performances, pd.DataFrame([{
             'Classifier': classifier_name,
             'BoW Method': bow_method,
@@ -138,9 +141,10 @@ def build_classifiers(bow_method: str, bow_normalization: str, bow_clusters: int
             'Recall': np.mean([e['recall'] for e in evaluations]),
             'F1-score': np.mean([e['f1_score'] for e in evaluations])
         }])], ignore_index=True)
-        # TODO: Classifier should be trained on the whole dataset before saving and not just on the last fold?
         if save_classifiers:
-            save_classifier(classifier, classifier_name, bow_method, bow_normalization, bow_clusters, hi_normalization)
+            final_classifier = clone(classifier)
+            final_classifier.fit(X, y)
+            save_classifier(final_classifier, classifier_name, bow_method, bow_normalization, bow_clusters, hi_normalization)
         if show_evaluation:
             print_classifier_evaluations(classifier_name, evaluations)
         if show_confusion_matrices:
@@ -155,23 +159,40 @@ def build_classifiers(bow_method: str, bow_normalization: str, bow_clusters: int
     return classifier_performances
 
 
-def main() -> None:
+def build_classifiers_wrapped(bow_method: str, bow_normalization: str, bow_clusters: int, hi_normalization: str,
+                              save_classifiers: bool = True, show_evaluation: bool = True,
+                              show_confusion_matrices: bool = True) -> pd.DataFrame:
+    # Function used for parallel computation
+    print(f'Building classifiers for bow_method={bow_method}, bow_normalization={bow_normalization}.'
+          f'bow_clusters={bow_clusters}, hi_normalization={hi_normalization}...')
     warnings.filterwarnings('ignore', category=ConvergenceWarning)
-    classifier_performances = pd.DataFrame()
-    for bow_method, bow_normalization, bow_clusters in VISUAL_WORDS_CONFIGS:
-        for hi_normalization in HISTOGRAM_NORMALIZATIONS:
-            print(f'Building classifiers for bow_method={bow_method}, bow_normalization={bow_normalization}.'
-                  f'bow_clusters={bow_clusters}, hi_normalization={hi_normalization}...')
-            new_classifier_performances = build_classifiers(
-                bow_method=bow_method,
-                bow_normalization=bow_normalization,
-                bow_clusters=bow_clusters,
-                hi_normalization=hi_normalization,
-                save_classifiers=True,
-                show_evaluation=True,
-                show_confusion_matrices=True
-            )
-            classifier_performances = pd.concat([classifier_performances, new_classifier_performances])
+    classifier_performances =  build_classifiers(
+        bow_method=bow_method,
+        bow_normalization=bow_normalization,
+        bow_clusters=bow_clusters,
+        hi_normalization=hi_normalization,
+        save_classifiers=save_classifiers,
+        show_evaluation=show_evaluation,
+        show_confusion_matrices=show_confusion_matrices
+    )
+    return classifier_performances
+
+
+def main() -> None:
+    classifier_performances = Parallel(n_jobs=-1, prefer='processes')(
+        delayed(build_classifiers_wrapped)(
+            bow_method=bow_method,
+            bow_normalization=bow_normalization,
+            bow_clusters=bow_clusters,
+            hi_normalization=hi_normalization,
+            save_classifiers=True,
+            show_evaluation=True,
+            show_confusion_matrices=True
+        )
+        for hi_normalization in HISTOGRAM_NORMALIZATIONS
+        for bow_method, bow_normalization, bow_clusters in VISUAL_WORDS_CONFIGS
+    )
+    classifier_performances = pd.concat(classifier_performances)
     classifier_performances = classifier_performances.sort_values(by='Accuracy', ascending=False)
     classifier_performances.to_csv(f'{CLASSIFIERS_PATH}/classifier_performances.csv', index=False)
 

@@ -38,7 +38,7 @@ class VisualWordsHistogramComputer:
         self.normalization = normalization
         self.nearest_neighbors = NearestNeighbors(n_neighbors=1).fit(visual_words)
 
-    def compute_histogram(self, image: np.ndarray) -> np.ndarray:
+    def compute_histogram(self, image: np.ndarray) -> np.ndarray | None:
         processed_image = preprocess_image(image)
         descriptors = self.descriptors_extractor.extract(processed_image)
         if descriptors is None:
@@ -64,8 +64,8 @@ def preprocess_image(image: np.ndarray) -> np.ndarray:
     return gray_image
 
 
-def run(image_path: str, bow_method: str = 'SIFT', bow_normalization: str = None, bow_clusters: int = 500,
-        hi_normalization: str = 'L2', classifier: str = 'SVM_RBF') -> str:
+def run(image_path: str, bow_method: str = 'SIFT', bow_normalization: str | None = None, bow_clusters: int = 500,
+    hi_normalization: str | None = 'L2', classifier: str = 'SVM_RBF') -> str:
     from build_vocabularies import load_visual_words
     from build_classifiers import load_classifier
     image = cv2.imread(image_path)

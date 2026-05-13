@@ -32,7 +32,8 @@ def load_aid_images(dataset_path: str = AID_DATASET_PATH, max_images_number: int
         raise FileNotFoundError(f'Base folder not found: {base_folder}')
     image_paths = list(base_folder.glob('**/*.jpg'))
     if max_images_number is not None:
-        image_paths = random.sample(image_paths, k=min(max_images_number, len(image_paths)), random_state=42)
+        random_generator = random.Random(42)
+        image_paths = random_generator.sample(image_paths, k=min(max_images_number, len(image_paths)))
     for image_path in image_paths:
         image = cv2.imread(str(image_path))
         if image is None:
@@ -41,7 +42,7 @@ def load_aid_images(dataset_path: str = AID_DATASET_PATH, max_images_number: int
 
 
 def compute_visual_words(descriptors_extractor: DescriptorsExtractor, clusters_number: int,
-                         max_images_number: int | None = None) -> None:
+                         max_images_number: int | None = None) -> np.ndarray:
     # TODO: Should MiniBatchKMeans be fitted on multiple passes? 
     kmeans = MiniBatchKMeans(
         n_clusters=clusters_number, batch_size=1024, random_state=42
@@ -84,21 +85,19 @@ def load_visual_words(method: str, normalization: str | None, clusters_number: i
     return visual_words
 
 
-def compute_visual_words_wrapped(method: str, normalization: str | None, clusters_number: int) -> tuple:
+def compute_visual_words_wrapped(method: str, normalization: str | None, clusters_number: int) -> None:
     # Function used for parallel computation
     print(f'Computing visual words for method={method}, normalization={normalization}, clusters_number={clusters_number}...')
     descriptors_extractor = DescriptorsExtractor(method=method, normalization=normalization)
     visual_words = compute_visual_words(descriptors_extractor=descriptors_extractor, clusters_number=clusters_number)
-    return visual_words, method, normalization, clusters_number
+    save_visual_words(visual_words, method, normalization, clusters_number)
 
 
 def main() -> None:
-    results = Parallel(n_jobs=-1, prefer='processes')(
+    Parallel(n_jobs=-1, prefer='processes')(
         delayed(compute_visual_words_wrapped)(method, normalization, clusters_number)
         for method, normalization, clusters_number in VISUAL_WORDS_CONFIGS
     )
-    for visual_words, method, normalization, clusters_number in results:
-        save_visual_words(visual_words, method, normalization, clusters_number)
 
 
 if __name__ == '__main__':
