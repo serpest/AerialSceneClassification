@@ -36,6 +36,8 @@ def load_ucmlu_images(dataset_path: str = UCMLU_DATASET_PATH):
         raise FileNotFoundError(f'Base folder not found: {base_folder}')
     for image_path in base_folder.glob('*/*.tif'):
         image = cv2.imread(str(image_path))
+        if image is None:
+            continue
         label = image_path.parent.name
         yield (label, image)
 
@@ -93,6 +95,7 @@ def print_mean_evaluation(classifier_name: str, evaluations: list) -> None:
 
 def build_classifiers_for_config(bow_method: str = 'SIFT', bow_normalization: str = 'L2', bow_clusters: int = 100, hi_normalization: str = 'L2',
                                  show_evaluation: bool = True, show_confusion_matrices: bool = True) -> None:
+    Path(CLASSIFIERS_PATH).mkdir(parents=True, exist_ok=True)
     descriptors_extractor = DescriptorsExtractor(method=bow_method, normalization=bow_normalization)
     visual_words = load_saved_visual_words(
         method=bow_method, normalization=bow_normalization, clusters_number=bow_clusters

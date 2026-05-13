@@ -32,9 +32,11 @@ def load_aid_images(dataset_path: str = AID_DATASET_PATH, max_images_number: int
         raise FileNotFoundError(f'Base folder not found: {base_folder}')
     image_paths = list(base_folder.glob('**/*.jpg'))
     if max_images_number is not None:
-        image_paths = random.sample(image_paths, k=min(max_images_number, len(image_paths)))
+        image_paths = random.sample(image_paths, k=min(max_images_number, len(image_paths)), random_state=42)
     for image_path in image_paths:
         image = cv2.imread(str(image_path))
+        if image is None:
+            continue
         yield image
 
 
@@ -61,6 +63,7 @@ def convert_config_to_file_path(method: str, normalization: str | None, clusters
 
 def save_visual_words(visual_words: np.ndarray, method: str, normalization: str | None, clusters_number: int,
                       vocabularies_path: str = VOCABULARIES_PATH) -> None:
+    Path(vocabularies_path).mkdir(parents=True, exist_ok=True)
     file_path = convert_config_to_file_path(method, normalization, clusters_number, vocabularies_path)
     np.save(file_path, visual_words)
 

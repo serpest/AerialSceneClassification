@@ -64,9 +64,11 @@ def preprocess_image(image: np.ndarray) -> np.ndarray:
 
 
 def run(image_path: str, bow_method: str = 'SIFT', bow_normalization: str = 'L2', bow_clusters: int = 100,
-        hi_normalization: str = 'L2', classifier: str = 'Random Forest') -> str:
+        hi_normalization: str = 'L2', classifier: str = 'Random_Forest') -> str:
     from build_vocabularies import load_saved_visual_words
     image = cv2.imread(image_path)
+    if image is None:
+        raise FileNotFoundError(f'Image not readable: {image_path}')
     descriptors_extractor = DescriptorsExtractor(method=bow_method, normalization=bow_normalization)
     visual_words = load_saved_visual_words(method=bow_method, normalization=bow_normalization, clusters_number=bow_clusters)
     histogram_computer = VisualWordsHistogramComputer(descriptors_extractor=descriptors_extractor, visual_words=visual_words, normalization=hi_normalization)
