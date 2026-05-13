@@ -2,6 +2,8 @@ import cv2
 import numpy as np
 from sklearn.neighbors import NearestNeighbors
 
+from utils import load_classifier, load_visual_words
+
 
 class DescriptorsExtractor:
 
@@ -64,10 +66,8 @@ def preprocess_image(image: np.ndarray) -> np.ndarray:
     return gray_image
 
 
-def run(image_path: str, bow_method: str = 'SIFT', bow_normalization: str | None = None, bow_clusters: int = 500,
+def classify_image(image_path: str, bow_method: str = 'SIFT', bow_normalization: str | None = None, bow_clusters: int = 500,
     hi_normalization: str | None = 'L2', classifier: str = 'SVM_RBF') -> str:
-    from build_vocabularies import load_visual_words
-    from build_classifiers import load_classifier
     image = cv2.imread(image_path)
     if image is None:
         raise FileNotFoundError(f'Image not read: {image_path}')

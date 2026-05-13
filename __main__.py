@@ -1,6 +1,6 @@
 import argparse
 
-from bow_classification import run
+from bow_classification import classify_image
 from build_classifiers import CLASSIFIERS
 from build_vocabularies import VISUAL_WORDS_CLUSTERS_NUMBERS, VISUAL_WORDS_METHODS
 
@@ -22,7 +22,7 @@ def main() -> None:
     args = parse_args()
     bow_normalization = args.bow_normalization if args.bow_normalization != 'None' else None
     hi_normalization = args.hi_normalization if args.hi_normalization != 'None' else None
-    result = run(
+    result = classify_image(
         image_path=args.image_path,
         bow_method=args.bow_method,
         bow_normalization=bow_normalization,

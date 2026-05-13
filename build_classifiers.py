@@ -18,11 +18,8 @@ from sklearn.svm import SVC
 
 from bow_classification import DescriptorsExtractor, VisualWordsHistogramComputer
 from build_vocabularies import VISUAL_WORDS_CONFIGS, load_visual_words
-
-
-UCMLU_DATASET_PATH = 'DATASET/UCMerced_LandUse'
-
-CLASSIFIERS_PATH = 'classifiers' # Directory for storing trained classifiers
+from config import CLASSIFIERS_PATH, UCMLU_DATASET_PATH
+from utils import convert_classifier_config_to_file_path
 
 STRATIFIED_K_FOLD = StratifiedKFold(n_splits=3, shuffle=True, random_state=42)
 
@@ -49,25 +46,10 @@ def load_ucmlu_images(dataset_path: str = UCMLU_DATASET_PATH):
         yield (label, image)
 
 
-def convert_classifier_config_to_file_path(classifier_name: str, bow_method: str,
-                                           bow_normalization: str, bow_clusters: int,
-                                           hi_normalization: str) -> str:
-    file_name = f'{classifier_name}_{bow_method}_{bow_normalization}_{bow_clusters}_{hi_normalization}.pkl'
-    return f'{CLASSIFIERS_PATH}/{file_name}'
-
-
 def save_classifier(classifier: object, classifier_name: str, bow_method: str, bow_normalization: str,
                     bow_clusters: int, hi_normalization: str) -> None:
     file_path = convert_classifier_config_to_file_path(classifier_name, bow_method, bow_normalization, bow_clusters, hi_normalization)
     joblib.dump(classifier, file_path)
-
-
-def load_classifier(classifier_name: str, bow_method: str, bow_normalization: str,
-                    bow_clusters: int, hi_normalization: str) -> object:
-    file_path = convert_classifier_config_to_file_path(classifier_name, bow_method, bow_normalization, bow_clusters, hi_normalization)
-    if not os.path.exists(file_path):
-        raise FileNotFoundError(f'Classifier file not found: {file_path}. Run build_classifiers.py to build the classifiers first')
-    return joblib.load(file_path)
 
 
 def evaluate_classifier_fold(classifier: object, X_test: np.ndarray, y_test: np.ndarray) -> dict:

@@ -8,11 +8,8 @@ import numpy as np
 from sklearn.cluster import MiniBatchKMeans
 
 from bow_classification import DescriptorsExtractor, preprocess_image
-
-
-AID_DATASET_PATH = 'DATASET/AID'
-
-VOCABULARIES_PATH = 'vocabularies'
+from config import AID_DATASET_PATH, VOCABULARIES_PATH
+from utils import convert_visual_words_config_to_file_path
 
 VISUAL_WORDS_METHODS = ['SIFT', 'ORB']
 VISUAL_WORDS_NORMALIZATIONS = [None, 'L1', 'L2']
@@ -57,32 +54,11 @@ def compute_visual_words(descriptors_extractor: DescriptorsExtractor, clusters_n
     return kmeans.cluster_centers_
 
 
-def convert_visual_words_config_to_file_path(method: str, normalization: str | None, clusters_number: int,
-                                vocabularies_path: str) -> str:
-    file_name = f'visual_words_{method}_{normalization}_{clusters_number}.npy'
-    return f'{vocabularies_path}/{file_name}'
-
-
 def save_visual_words(visual_words: np.ndarray, method: str, normalization: str | None, clusters_number: int,
                       vocabularies_path: str = VOCABULARIES_PATH) -> None:
     Path(vocabularies_path).mkdir(parents=True, exist_ok=True)
     file_path = convert_visual_words_config_to_file_path(method, normalization, clusters_number, vocabularies_path)
     np.save(file_path, visual_words)
-
-
-def load_visual_words(method: str, normalization: str | None, clusters_number: int,
-                            vocabularies_path: str = VOCABULARIES_PATH) -> np.ndarray:
-    if method not in VISUAL_WORDS_METHODS:
-        raise ValueError(f'Unsupported method: {method}. Use {VISUAL_WORDS_METHODS}')
-    if normalization not in VISUAL_WORDS_NORMALIZATIONS:
-        raise ValueError(f'Unsupported normalization: {normalization}. Use {VISUAL_WORDS_NORMALIZATIONS}')
-    if clusters_number not in VISUAL_WORDS_CLUSTERS_NUMBERS:
-        raise ValueError(f'Invalid clusters number: {clusters_number}. Use {VISUAL_WORDS_CLUSTERS_NUMBERS}')
-    file_path = convert_visual_words_config_to_file_path(method, normalization, clusters_number, vocabularies_path)
-    if not os.path.exists(file_path):
-        raise FileNotFoundError(f'Visual words file not found: {file_path}. Run build_vocabularies.py to build the visual words first')
-    visual_words = np.load(file_path)
-    return visual_words
 
 
 def compute_visual_words_wrapped(method: str, normalization: str | None, clusters_number: int) -> None:
