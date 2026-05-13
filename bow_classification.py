@@ -17,6 +17,7 @@ class DescriptorsExtractor:
         self.normalization = normalization
         
     def extract(self, image: np.ndarray) -> np.ndarray | None:
+        # Image should be already preprocessed
         _, descriptors = self.detector.detectAndCompute(image, None)
         if descriptors is not None and self.normalization is not None:
             if self.normalization == 'L1':
@@ -58,25 +59,30 @@ class VisualWordsHistogramComputer:
 
 
 def preprocess_image(image: np.ndarray) -> np.ndarray:
-    # TODO
+    # TODO: Skipping preprocessing is ok?
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     return gray_image
 
 
-def run(image_path: str, bow_method: str = 'SIFT', bow_normalization: str = 'L2', bow_clusters: int = 100,
-        hi_normalization: str = 'L2', classifier: str = 'Random_Forest') -> str:
-    from build_vocabularies import load_saved_visual_words
+def run(image_path: str, bow_method: str = 'SIFT', bow_normalization: str = None, bow_clusters: int = 500,
+        hi_normalization: str = 'L2', classifier: str = 'SVM_RBF') -> str:
+    from build_vocabularies import load_visual_words
+    from build_classifiers import load_classifier
     image = cv2.imread(image_path)
     if image is None:
-        raise FileNotFoundError(f'Image not readable: {image_path}')
+        raise FileNotFoundError(f'Image not read: {image_path}')
     descriptors_extractor = DescriptorsExtractor(method=bow_method, normalization=bow_normalization)
-    visual_words = load_saved_visual_words(method=bow_method, normalization=bow_normalization, clusters_number=bow_clusters)
-    histogram_computer = VisualWordsHistogramComputer(descriptors_extractor=descriptors_extractor, visual_words=visual_words, normalization=hi_normalization)
+    visual_words = load_visual_words(method=bow_method, normalization=bow_normalization, clusters_number=bow_clusters)
+    histogram_computer = VisualWordsHistogramComputer(
+        descriptors_extractor=descriptors_extractor, visual_words=visual_words, normalization=hi_normalization
+    )
     histogram = histogram_computer.compute_histogram(image)
     if histogram is None:
-        raise ValueError('No descriptors found in the image, cannot compute histogram')
-    histogram = histogram.reshape(1, -1)
-    from build_classifiers import load_classifier
-    classifier = load_classifier(classifier_name=classifier, bow_method=bow_method, bow_normalization=bow_normalization, bow_clusters=bow_clusters, hi_normalization=hi_normalization)
+        raise ValueError('cannot compute histogram for the image')
+    histogram = histogram.reshape(1, -1) # Convert shape from (n,) to (1, n)
+    classifier = load_classifier(
+        classifier_name=classifier, bow_method=bow_method, bow_normalization=bow_normalization,
+        bow_clusters=bow_clusters, hi_normalization=hi_normalization
+    )
     predicted_label = classifier.predict(histogram)[0]
     return predicted_label

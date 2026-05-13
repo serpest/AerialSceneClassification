@@ -1,16 +1,18 @@
 import argparse
 
 from bow_classification import run
+from build_classifiers import CLASSIFIERS, HISTOGRAM_NORMALIZATIONS
+from build_vocabularies import VISUAL_WORDS_CLUSTERS_NUMBERS, VISUAL_WORDS_METHODS, VISUAL_WORDS_NORMALIZATIONS
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Run image classification using BoW.')
     parser.add_argument('image_path', help='Path to the image to classify.')
-    parser.add_argument('--bow_method', choices=['SIFT', 'ORB'], default='SIFT', help='Method for computing visual words (default: SIFT).')
-    parser.add_argument('--bow_normalization', choices=['None', 'L1', 'L2'], default='L2', help='Normalization for visual words histograms (default: L2).')
-    parser.add_argument('--bow_clusters', choices=[50, 100, 500], type=int, default=100, help='Number of clusters for visual words (default: 100).')
-    parser.add_argument('--hi_normalization', choices=['None', 'L1', 'L2'], default='L2', help='Normalization for histograms of visual words (default: L2).')
-    parser.add_argument('--classifier', choices=['SVM_linear', 'SVM_RBF', 'Random_Forest', 'k-NN', 'Logistic_Regression'], default='Random_Forest', help='Classifier to use for prediction (default: Random_Forest).')
+    parser.add_argument('--bow_method', choices=VISUAL_WORDS_METHODS, default='SIFT', help='Method for computing visual words (default: SIFT).')
+    parser.add_argument('--bow_normalization', choices=VISUAL_WORDS_NORMALIZATIONS, default='None', help='Normalization for visual words histograms (default: None).')
+    parser.add_argument('--bow_clusters', choices=VISUAL_WORDS_CLUSTERS_NUMBERS, type=int, default=500, help='Number of clusters for visual words (default: 500).')
+    parser.add_argument('--hi_normalization', choices=HISTOGRAM_NORMALIZATIONS, default='L2', help='Normalization for histograms of visual words (default: L2).')
+    parser.add_argument('--classifier', choices=list(CLASSIFIERS.keys()), default='SVM_RBF', help='Classifier to use for prediction (default: SVM_RBF).')
     return parser.parse_args()
 
 
