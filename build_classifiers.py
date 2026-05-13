@@ -4,7 +4,7 @@ import warnings
 import pandas as pd
 import cv2
 import joblib
-from matplotlib import pyplot as plt
+from matplotlib import cm, pyplot as plt
 import numpy as np
 from joblib import Parallel, delayed
 from sklearn.base import clone
@@ -105,9 +105,7 @@ def build_classifiers(bow_method: str, bow_normalization: str, bow_clusters: int
     if save_classifiers:
         Path(CLASSIFIERS_PATH).mkdir(parents=True, exist_ok=True)
     descriptors_extractor = DescriptorsExtractor(method=bow_method, normalization=bow_normalization)
-    visual_words = load_visual_words(
-        method=bow_method, normalization=bow_normalization, clusters_number=bow_clusters
-    )
+    visual_words = load_visual_words(method=bow_method, normalization=bow_normalization, clusters_number=bow_clusters)
     histogram_computer = VisualWordsHistogramComputer(
         descriptors_extractor=descriptors_extractor, visual_words=visual_words, normalization=hi_normalization
     )
@@ -150,7 +148,7 @@ def build_classifiers(bow_method: str, bow_normalization: str, bow_clusters: int
         if show_confusion_matrices:
             classifier_index = list(CLASSIFIERS.keys()).index(classifier_name)
             subfig = plt.subplot(2, 3, classifier_index + 1)
-            subfig.imshow(np.mean([e['confusion_matrix'] for e in evaluations], axis=0))
+            subfig.imshow(np.mean([e['confusion_matrix'] for e in evaluations], axis=0), cmap=cm.Blues)
             subfig.set_title(classifier_name)
             subfig.set_xlabel('Predicted label')
             subfig.set_ylabel('True label')
@@ -195,6 +193,40 @@ def main() -> None:
     classifier_performances = pd.concat(classifier_performances)
     classifier_performances = classifier_performances.sort_values(by='Accuracy', ascending=False)
     classifier_performances.to_csv(f'{CLASSIFIERS_PATH}/classifier_performances.csv', index=False)
+
+
+def show_classifier_mean_confusion_matrix(bow_method: str = 'SIFT', bow_normalization: str | None = None, bow_clusters: int = 500,
+                                     hi_normalization: str | None = 'L2', classifier_name: str = 'SVM_RBF') -> None:
+    if classifier_name not in CLASSIFIERS:
+        raise ValueError(f'Unsupported classifier: {classifier_name}. Use {list(CLASSIFIERS.keys())}')
+    descriptors_extractor = DescriptorsExtractor(method=bow_method, normalization=bow_normalization)
+    visual_words = load_visual_words(method=bow_method, normalization=bow_normalization, clusters_number=bow_clusters)
+    histogram_computer = VisualWordsHistogramComputer(
+        descriptors_extractor=descriptors_extractor, visual_words=visual_words, normalization=hi_normalization
+    )
+    X = [] # Feature matrix
+    y = [] # Labels
+    for label, image in load_ucmlu_images():
+        histogram = histogram_computer.compute_histogram(image=image)
+        if histogram is None: # No descriptors found in the image
+            continue
+        X.append(histogram)
+        y.append(label)
+    X = np.array(X)
+    y = np.array(y)
+    classifier = CLASSIFIERS[classifier_name]
+    confusion_matrices = []
+    for train_index, test_index in STRATIFIED_K_FOLD.split(X, y):
+        X_train, X_test = X[train_index], X[test_index]
+        y_train, y_test = y[train_index], y[test_index]
+        fold_classifier = clone(classifier)
+        fold_classifier.fit(X_train, y_train)
+        confusion_matrices.append(confusion_matrix(y_test, fold_classifier.predict(X_test)))
+    mean_confusion_matrix = np.mean(confusion_matrices, axis=0)
+    plt.imshow(mean_confusion_matrix, cmap=cm.Blues)
+    plt.xlabel('Predicted label')
+    plt.ylabel('True label')
+    plt.show()
 
 
 if __name__ == '__main__':
