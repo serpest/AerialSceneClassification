@@ -17,18 +17,18 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
 
 from bow_classification import DescriptorsExtractor, VisualWordsHistogramComputer
-from build_vocabularies import VISUAL_WORDS_CONFIGS, load_visual_words
+from build_vocabularies import VISUAL_WORDS_CONFIGS
 from config import CLASSIFIERS_PATH, UCMLU_DATASET_PATH
-from utils import convert_classifier_config_to_file_path
+from utils import convert_classifier_config_to_file_path, load_visual_words
 
 STRATIFIED_K_FOLD = StratifiedKFold(n_splits=3, shuffle=True, random_state=42)
 
 CLASSIFIERS = {
-    'SVM_Linear': SVC(kernel='linear'),
-    'SVM_RBF': SVC(kernel='rbf'),
-    'Random_Forest': RandomForestClassifier(random_state=42),
+    'SVM_Linear': SVC(kernel='linear', class_weight='balanced', random_state=42),
+    'SVM_RBF': SVC(kernel='rbf', class_weight='balanced', random_state=42),
+    'Random_Forest': RandomForestClassifier(class_weight='balanced', random_state=42),
     'k-NN': KNeighborsClassifier(),
-    'Logistic_Regression': LogisticRegression()
+    'Logistic_Regression': LogisticRegression(class_weight='balanced', random_state=42)
 }
 
 HISTOGRAM_NORMALIZATIONS = [None, 'L1', 'L2']
