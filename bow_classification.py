@@ -67,7 +67,7 @@ def preprocess_image(image: np.ndarray) -> np.ndarray:
 
 
 def classify_image(image_path: str, bow_method: str = 'SIFT', bow_normalization: str | None = None, bow_clusters: int = 500,
-    hi_normalization: str | None = 'L2', classifier: str = 'SVM_RBF') -> str:
+                   hi_normalization: str | None = 'L2', classifier: str = 'SVM_RBF') -> str:
     image = cv2.imread(image_path)
     if image is None:
         raise FileNotFoundError(f'Image not read: {image_path}')

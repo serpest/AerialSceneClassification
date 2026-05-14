@@ -1,10 +1,8 @@
-import os
-from pathlib import Path
 import random
-
 import cv2
-from joblib import Parallel, delayed
 import numpy as np
+from pathlib import Path
+from joblib import Parallel, delayed
 from sklearn.cluster import MiniBatchKMeans
 
 from bow_classification import DescriptorsExtractor, preprocess_image

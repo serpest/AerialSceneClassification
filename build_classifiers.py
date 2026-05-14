@@ -53,6 +53,7 @@ def save_classifier(classifier: object, classifier_name: str, bow_method: str, b
 
 
 def evaluate_classifier_fold(classifier: object, X_test: np.ndarray, y_test: np.ndarray) -> dict:
+    # TODO: Why accuracy, precision, recall and f1-score are so similar?
     y_pred = classifier.predict(X_test)
     evaluation = {
         'accuracy': classifier.score(X_test, y_test),
@@ -178,7 +179,7 @@ def main() -> None:
 
 
 def show_classifier_mean_confusion_matrix(bow_method: str = 'SIFT', bow_normalization: str | None = None, bow_clusters: int = 500,
-                                     hi_normalization: str | None = 'L2', classifier_name: str = 'SVM_RBF') -> None:
+                                          hi_normalization: str | None = 'L2', classifier_name: str = 'SVM_RBF') -> None:
     if classifier_name not in CLASSIFIERS:
         raise ValueError(f'Unsupported classifier: {classifier_name}. Use {list(CLASSIFIERS.keys())}')
     descriptors_extractor = DescriptorsExtractor(method=bow_method, normalization=bow_normalization)
