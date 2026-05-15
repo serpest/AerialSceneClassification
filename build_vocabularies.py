@@ -25,10 +25,11 @@ def load_aid_images(dataset_path: str = AID_DATASET_PATH, max_images_number: int
     base_folder = Path(dataset_path)
     if not base_folder.exists() or not base_folder.is_dir():
         raise FileNotFoundError(f'Base folder not found: {base_folder}')
+    random_generator = random.Random(42)
     image_paths = list(base_folder.glob('**/*.jpg'))
+    random_generator.shuffle(image_paths)
     if max_images_number is not None:
-        random_generator = random.Random(42)
-        image_paths = random_generator.sample(image_paths, k=min(max_images_number, len(image_paths)))
+        image_paths = image_paths[:max_images_number]
     for image_path in image_paths:
         image = cv2.imread(str(image_path))
         if image is None:
@@ -37,18 +38,18 @@ def load_aid_images(dataset_path: str = AID_DATASET_PATH, max_images_number: int
 
 
 def compute_visual_words(descriptors_extractor: DescriptorsExtractor, clusters_number: int,
-                         max_images_number: int | None = None) -> np.ndarray:
-    # TODO: Should MiniBatchKMeans be fitted on multiple passes? 
+                         max_images_number: int | None = None, passes_number: int = 1) -> np.ndarray:
     kmeans = MiniBatchKMeans(
         n_clusters=clusters_number, batch_size=1024, random_state=42
     )
-    for i, image in enumerate(load_aid_images(max_images_number=max_images_number)):
-        processed_image = preprocess_image(image)
-        descriptors = descriptors_extractor.extract(processed_image)
-        if descriptors is not None:
-            kmeans.partial_fit(descriptors)
-        if (i + 1) % 1000 == 0:
-            print(f'Processed {i + 1} images...')
+    for _ in range(passes_number):
+        for i, image in enumerate(load_aid_images(max_images_number=max_images_number)):
+            processed_image = preprocess_image(image)
+            descriptors = descriptors_extractor.extract(processed_image)
+            if descriptors is not None:
+                kmeans.partial_fit(descriptors)
+            if (i + 1) % 1000 == 0:
+                print(f'Processed {i + 1} images...')
     return kmeans.cluster_centers_
 
 

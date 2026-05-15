@@ -61,7 +61,6 @@ class VisualWordsHistogramComputer:
 
 
 def preprocess_image(image: np.ndarray) -> np.ndarray:
-    # TODO: Skipping preprocessing is ok?
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     return gray_image
 

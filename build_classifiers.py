@@ -53,7 +53,6 @@ def save_classifier(classifier: object, classifier_name: str, bow_method: str, b
 
 
 def evaluate_classifier_fold(classifier: object, X_test: np.ndarray, y_test: np.ndarray) -> dict:
-    # TODO: Why accuracy, precision, recall and f1-score are so similar?
     y_pred = classifier.predict(X_test)
     evaluation = {
         'accuracy': classifier.score(X_test, y_test),
@@ -209,6 +208,7 @@ def show_classifier_mean_confusion_matrix(bow_method: str = 'SIFT', bow_normaliz
     plt.imshow(mean_confusion_matrix, cmap=cm.Blues)
     plt.xlabel('Predicted label')
     plt.ylabel('True label')
+    plt.colorbar()
     plt.show()
 
 
