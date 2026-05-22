@@ -53,10 +53,9 @@ def compute_visual_words(descriptors_extractor: DescriptorsExtractor, clusters_n
     return kmeans.cluster_centers_
 
 
-def save_visual_words(visual_words: np.ndarray, method: str, normalization: str | None, clusters_number: int,
-                      vocabularies_path: str = VOCABULARIES_PATH) -> None:
-    Path(vocabularies_path).mkdir(parents=True, exist_ok=True)
-    file_path = convert_visual_words_config_to_file_path(method, normalization, clusters_number, vocabularies_path)
+def save_visual_words(visual_words: np.ndarray, method: str, normalization: str | None, clusters_number: int) -> None:
+    Path(VOCABULARIES_PATH).mkdir(parents=True, exist_ok=True)
+    file_path = convert_visual_words_config_to_file_path(method, normalization, clusters_number)
     np.save(file_path, visual_words)
 
 

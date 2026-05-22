@@ -167,7 +167,7 @@ def main() -> None:
             hi_normalization=hi_normalization,
             save_classifiers=True,
             show_evaluation=True,
-            show_confusion_matrices=True
+            show_confusion_matrices=False
         )
         for hi_normalization in HISTOGRAM_NORMALIZATIONS
         for bow_method, bow_normalization, bow_clusters in VISUAL_WORDS_CONFIGS
