@@ -5,7 +5,7 @@ import tensorflow as tf
 from keras import layers
 from pathlib import Path
 
-from config import UCMLU_DATASET_PATH, UCMLU_TRAINED_MODEL_PATH
+from config import UCMLU_FULL_FINETUNED_MODEL_PATH, UCMLU_HEAD_FINETUNED_MODEL_PATH, UCMLU_PARTIAL_FINETUNED_MODEL_PATH, UCMLU_TRAINED_MODEL_PATH
 
 
 def preprocess_image(image: np.ndarray, size: tuple[int, int] | None = (100, 100)) -> np.ndarray:
@@ -86,8 +86,24 @@ def classify_image(model: keras.Model, image: np.ndarray, unique_labels: list[st
     return predicted_label
 
 
-def classify_image_on_ucmlu(image: np.ndarray, weights_path: str = UCMLU_TRAINED_MODEL_PATH) -> str:
-    unique_labels = sorted([folder.name for folder in Path(UCMLU_DATASET_PATH).iterdir() if folder.is_dir()])
+def classify_image_on_ucmlu(image_path: str, model_name: str = 'partial_finetuned') -> str:
+    image = cv2.imread(image_path)
+    if image is None:
+        raise FileNotFoundError(f'Image not read: {image_path}')
+    weights_path = get_weights_path_from_model_name(model_name)
+    unique_labels = ['agricultural', 'airplane', 'baseballdiamond', 'beach', 'buildings', 'chaparral', 'denseresidential', 'forest', 'freeway', 'golfcourse', 'harbor', 'intersection', 'mediumresidential', 'mobilehomepark', 'overpass', 'parkinglot', 'river', 'runway', 'sparseresidential', 'storagetanks', 'tenniscourt']
     model = load_model(weights_path=weights_path)
     predicted_label = classify_image(model, image, unique_labels)
     return predicted_label
+
+
+def get_weights_path_from_model_name(model_name: str) -> str:
+    if model_name == 'head_finetuned':
+        return UCMLU_HEAD_FINETUNED_MODEL_PATH
+    elif model_name == 'partial_finetuned':
+        return UCMLU_PARTIAL_FINETUNED_MODEL_PATH
+    elif model_name == 'full_finetuned':
+        return UCMLU_FULL_FINETUNED_MODEL_PATH
+    elif model_name == 'trained':
+        return UCMLU_TRAINED_MODEL_PATH
+    raise ValueError(f'Invalid model name: {model_name}')

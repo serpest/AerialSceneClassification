@@ -217,7 +217,7 @@ def evaluate_model(model: keras.Model, dataset: tf.data.Dataset, steps: int) -> 
     for _, batch_labels in dataset.take(steps):
         # Convert one-hot encoded labels to label indexes
         y_true.append(np.argmax(batch_labels.numpy(), axis=1))
-    y_true = np.array(y_true)
+    y_true = np.concatenate(y_true, axis=0)
     y_pred_proba = model.predict(dataset, steps=steps, verbose=0)
     y_pred = np.argmax(y_pred_proba, axis=1)
     metrics = {
@@ -234,6 +234,9 @@ def show_confusion_matrix(matrix: np.ndarray, unique_labels: list[str]) -> None:
     plt.figure()
     plt.imshow(matrix, cmap=plt.cm.Blues)
     plt.colorbar()
+    tick_marks = np.arange(len(unique_labels))
+    plt.xticks(tick_marks, unique_labels, rotation=90)
+    plt.yticks(tick_marks, unique_labels)
     plt.xlabel('Predicted Label')
     plt.ylabel('True Label')
     plt.tight_layout()

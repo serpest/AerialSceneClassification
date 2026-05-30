@@ -2,8 +2,6 @@ AID_DATASET_PATH = 'DATASET/AID'
 
 UCMLU_DATASET_PATH = 'DATASET/UCMerced_LandUse'
 
-MODEL_PERFORMANCE_REPORT_PATH = 'classifiers/classifier_performances.csv'
-
 AID_PRETRAINED_MODEL_PATH = 'classifiers/aid_pretrained.weights.h5'
 
 UCMLU_HEAD_FINETUNED_MODEL_PATH = 'classifiers/ucmlu_head_finetuned.weights.h5'
