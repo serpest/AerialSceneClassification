@@ -56,6 +56,9 @@ def augment_image(image: np.ndarray) -> np.ndarray:
     # Random horizontal flip
     if random.random() < 0.5:
         image = cv2.flip(image, 1)
+    # Random vertical flip
+    if random.random() < 0.5:
+        image = cv2.flip(image, 0)
     # Random rotation
     angle = random.uniform(-10, 10)
     height, width = image.shape[:2]
