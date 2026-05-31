@@ -7,6 +7,13 @@ from keras import layers
 from config import UCMLU_FULL_FINETUNED_MODEL_PATH, UCMLU_HEAD_FINETUNED_MODEL_PATH, UCMLU_PARTIAL_FINETUNED_MODEL_PATH, UCMLU_TRAINED_MODEL_PATH
 
 
+UCML_UNIQUE_LABELS = [
+    'agricultural', 'airplane', 'baseballdiamond', 'beach', 'buildings', 'chaparral', 'denseresidential',
+    'forest', 'freeway', 'golfcourse', 'harbor', 'intersection', 'mediumresidential', 'mobilehomepark',
+    'overpass', 'parkinglot', 'river', 'runway', 'sparseresidential', 'storagetanks', 'tenniscourt'
+]
+
+
 def preprocess_image(image: np.ndarray, size: tuple[int, int] | None = (100, 100)) -> np.ndarray:
     mean = np.array([0.485, 0.456, 0.406]) # ImageNet mean values for normalization
     std = np.array([0.229, 0.224, 0.225]) # ImageNet standard deviation values for normalization
@@ -92,9 +99,8 @@ def classify_image_on_ucmlu(image_path: str, model_name: str = 'full_finetuned')
     if image is None:
         raise FileNotFoundError(f'Image not read: {image_path}')
     weights_path = get_weights_path_from_model_name(model_name)
-    unique_labels = ['agricultural', 'airplane', 'baseballdiamond', 'beach', 'buildings', 'chaparral', 'denseresidential', 'forest', 'freeway', 'golfcourse', 'harbor', 'intersection', 'mediumresidential', 'mobilehomepark', 'overpass', 'parkinglot', 'river', 'runway', 'sparseresidential', 'storagetanks', 'tenniscourt']
     model = load_model(weights_path=weights_path)
-    predicted_label = classify_image(model, image, unique_labels)
+    predicted_label = classify_image(model, image, UCML_UNIQUE_LABELS)
     return predicted_label
 
 
