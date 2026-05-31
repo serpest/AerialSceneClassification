@@ -76,16 +76,18 @@ def load_model(weights_path: str, input_shape: tuple[int, int, int] = (100, 100,
     return model
 
 
-def classify_image(model: keras.Model, image: np.ndarray, unique_labels: list[str]) -> str:
+def classify_image(model: keras.Model, image: np.ndarray, unique_labels: list[str], print_probabilities: bool = False) -> str:
     processed_image = preprocess_image(image)
     input_tensor = np.expand_dims(processed_image, axis=0) # (1, height, width, channels)
     predictions = model.predict(input_tensor) # (1, classes_number), probabilities for each class
+    if print_probabilities:
+        print(f'Predicted probabilities: {sorted(zip(unique_labels, predictions[0]), key=lambda x: x[1], reverse=True)}')
     predicted_index = np.argmax(predictions[0])
     predicted_label = unique_labels[predicted_index]
     return predicted_label
 
 
-def classify_image_on_ucmlu(image_path: str, model_name: str = 'partial_finetuned') -> str:
+def classify_image_on_ucmlu(image_path: str, model_name: str = 'full_finetuned') -> str:
     image = cv2.imread(image_path)
     if image is None:
         raise FileNotFoundError(f'Image not read: {image_path}')

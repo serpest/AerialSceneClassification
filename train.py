@@ -20,7 +20,7 @@ def load_ucmlu_image_paths_and_labels(dataset_path: str = UCMLU_DATASET_PATH, tr
 
 
 def split_ucmlu_paths_and_labels(image_paths: list[str], image_labels: list[str],
-                                 train_size: float, validation_size: float) -> tuple:
+                                 train_size: float, validation_size: float, print_image_paths: bool = False) -> tuple:
     train_image_paths, temp_image_paths, train_labels, temp_labels = train_test_split(
         image_paths,
         image_labels,
@@ -37,6 +37,10 @@ def split_ucmlu_paths_and_labels(image_paths: list[str], image_labels: list[str]
         shuffle=True,
         stratify=temp_labels
     )
+    if print_image_paths:
+        print(f'Training images: {train_image_paths}')
+        print(f'Validation images: {validation_image_paths}')
+        print(f'Test images: {test_image_paths}')
     return train_image_paths, train_labels, validation_image_paths, validation_labels, test_image_paths, test_labels
 
 

@@ -15,8 +15,8 @@ def parse_args() -> argparse.Namespace:
 		'--model',
 		'-m',
 		choices=MODEL_CHOICES,
-		default='partial_finetuned',
-		help='Model weights to use (default: partial_finetuned).'
+		default='full_finetuned',
+		help='Model weights to use (default: full_finetuned).'
 	)
 	return parser.parse_args()
 
