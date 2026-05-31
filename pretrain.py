@@ -51,7 +51,7 @@ def build_aid_train_validation_datasets(image_size: tuple[int, int] = (100, 100)
     return train_dataset, validation_dataset, unique_labels, image_shape, train_steps, validation_steps
 
 
-def pretrain_model_on_aid(image_size: tuple[int, int] = (100, 100), epochs: int = 100, train_augmented_number: int = 1,
+def pretrain_model_on_aid(image_size: tuple[int, int] = (100, 100), epochs: int = 200, train_augmented_number: int = 1,
                           learning_rate: float = 1e-3, weights_path: str = AID_PRETRAINED_MODEL_PATH) -> keras.callbacks.History:
     train_dataset, validation_dataset, unique_labels, image_shape, train_steps, validation_steps = build_aid_train_validation_datasets(
         image_size=image_size,
@@ -94,7 +94,7 @@ def load_aid_pretrained_model(input_shape: tuple[int, int, int] = (100, 100, 3),
     return model
 
 
-def main(image_size: tuple[int, int] = (100, 100), epochs: int = 100, train_augmented_number: int = 1,
+def main(image_size: tuple[int, int] = (100, 100), epochs: int = 200, train_augmented_number: int = 1,
          show_history: bool = True) -> None:
     history = pretrain_model_on_aid(image_size, epochs, train_augmented_number)
     if show_history:

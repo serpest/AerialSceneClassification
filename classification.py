@@ -3,7 +3,6 @@ import keras
 import numpy as np
 import tensorflow as tf
 from keras import layers
-from pathlib import Path
 
 from config import UCMLU_FULL_FINETUNED_MODEL_PATH, UCMLU_HEAD_FINETUNED_MODEL_PATH, UCMLU_PARTIAL_FINETUNED_MODEL_PATH, UCMLU_TRAINED_MODEL_PATH
 

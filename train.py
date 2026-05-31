@@ -42,7 +42,7 @@ def split_ucmlu_paths_and_labels(image_paths: list[str], image_labels: list[str]
 
 def build_ucmlu_train_validation_test_datasets(image_size: tuple[int, int] = (100, 100), train_size: float = 0.7,
                                                validation_size: float = 0.15, batch_size: int = 32,
-                                               train_augmented_number: int = 2) -> tuple:
+                                               train_augmented_number: int = 1) -> tuple:
     train_image_paths, train_labels, validation_image_paths, validation_labels, test_image_paths, test_labels = load_ucmlu_image_paths_and_labels(
         train_size=train_size, validation_size=validation_size
     )
@@ -110,7 +110,7 @@ def build_finetuned_model(classes_number: int, train_strategy: str = 'full') -> 
 
 def finetune_model_on_ucmlu(train_dataset: tf.data.Dataset, validation_dataset: tf.data.Dataset,
                             train_steps: int, validation_steps: int, unique_labels: list[str],
-                            epochs: int = 100, learning_rate: float = 1e-4,
+                            epochs: int = 200, learning_rate: float = 1e-4,
                             train_strategy: str = 'full') -> tuple[keras.Model, keras.callbacks.History, float]:
     print(f'Starting finetuning with strategy {train_strategy} on UCMLU')
     classes_number = len(unique_labels)
@@ -159,7 +159,7 @@ def get_weights_path(train_strategy: str) -> str:
 
 def finetune_model_on_ucmlu_all_strategies(train_dataset: tf.data.Dataset, validation_dataset: tf.data.Dataset,
                                            train_steps: int, validation_steps: int, unique_labels: list[str],
-                                           epochs: int = 100, learning_rate: float = 1e-4) -> dict[str, tuple[keras.Model, keras.callbacks.History, float]]:
+                                           epochs: int = 200, learning_rate: float = 1e-4) -> dict[str, tuple[keras.Model, keras.callbacks.History, float]]:
     results = {}
     for train_strategy in ['head', 'partial', 'full']:
         model, history, f1_macro = finetune_model_on_ucmlu(
@@ -179,7 +179,7 @@ def load_finetuned_ucmlu_model(train_strategy: str = 'full', classes_number: int
 
 def train_model_on_ucmlu(train_dataset: tf.data.Dataset, validation_dataset: tf.data.Dataset, train_steps: int,
                          validation_steps: int, unique_labels: list[str], image_shape: tuple,
-                         epochs: int = 100, learning_rate: float = 1e-3) -> tuple[keras.Model, keras.callbacks.History, float]:
+                         epochs: int = 200, learning_rate: float = 1e-3) -> tuple[keras.Model, keras.callbacks.History, float]:
     print('Starting training on UCMLU')
     classes_number = len(unique_labels)
     model = build_model(input_shape=image_shape, classes_number=classes_number)
