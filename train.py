@@ -32,7 +32,7 @@ def split_ucmlu_paths_and_labels(image_paths: list[str], image_labels: list[str]
     validation_image_paths, test_image_paths, validation_labels, test_labels = train_test_split(
         temp_image_paths,
         temp_labels,
-        train_size=validation_size,
+        train_size=validation_size / (1.0 - train_size),
         random_state=42,
         shuffle=True,
         stratify=temp_labels
@@ -200,6 +200,7 @@ def train_model_on_ucmlu(train_dataset: tf.data.Dataset, validation_dataset: tf.
     model_checkpoint = keras.callbacks.ModelCheckpoint(
         filepath=UCMLU_TRAINED_MODEL_PATH,
         monitor='val_loss',
+        save_best_only=True,
         save_weights_only=True
     )
     callbacks = [early_stopping, model_checkpoint]
