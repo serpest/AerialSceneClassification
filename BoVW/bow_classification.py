@@ -65,13 +65,13 @@ def preprocess_image(image: np.ndarray) -> np.ndarray:
     return gray_image
 
 
-def classify_image(image_path: str, bow_method: str = 'SIFT', bow_normalization: str | None = None, bow_clusters: int = 500,
+def classify_image(image_path: str, bovw_method: str = 'SIFT', bovw_normalization: str | None = None, bovw_clusters: int = 500,
                    hi_normalization: str | None = 'L2', classifier: str = 'SVM_RBF') -> str:
     image = cv2.imread(image_path)
     if image is None:
         raise FileNotFoundError(f'Image not read: {image_path}')
-    descriptors_extractor = DescriptorsExtractor(method=bow_method, normalization=bow_normalization)
-    visual_words = load_visual_words(method=bow_method, normalization=bow_normalization, clusters_number=bow_clusters)
+    descriptors_extractor = DescriptorsExtractor(method=bovw_method, normalization=bovw_normalization)
+    visual_words = load_visual_words(method=bovw_method, normalization=bovw_normalization, clusters_number=bovw_clusters)
     histogram_computer = VisualWordsHistogramComputer(
         descriptors_extractor=descriptors_extractor, visual_words=visual_words, normalization=hi_normalization
     )
@@ -80,8 +80,8 @@ def classify_image(image_path: str, bow_method: str = 'SIFT', bow_normalization:
         raise ValueError('cannot compute histogram for the image')
     histogram = histogram.reshape(1, -1) # Convert shape from (n,) to (1, n)
     classifier = load_classifier(
-        classifier_name=classifier, bow_method=bow_method, bow_normalization=bow_normalization,
-        bow_clusters=bow_clusters, hi_normalization=hi_normalization
+        classifier_name=classifier, bovw_method=bovw_method, bovw_normalization=bovw_normalization,
+        bovw_clusters=bovw_clusters, hi_normalization=hi_normalization
     )
     predicted_label = classifier.predict(histogram)[0]
     return predicted_label

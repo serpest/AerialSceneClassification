@@ -5,16 +5,16 @@ import numpy as np
 from config import CLASSIFIERS_PATH, VOCABULARIES_PATH
 
 
-def convert_classifier_config_to_file_path(classifier_name: str, bow_method: str,
-                                           bow_normalization: str, bow_clusters: int,
+def convert_classifier_config_to_file_path(classifier_name: str, bovw_method: str,
+                                           bovw_normalization: str, bovw_clusters: int,
                                            hi_normalization: str) -> str:
-    file_name = f'{classifier_name}_{bow_method}_{bow_normalization}_{bow_clusters}_{hi_normalization}.pkl'
+    file_name = f'{classifier_name}_{bovw_method}_{bovw_normalization}_{bovw_clusters}_{hi_normalization}.pkl'
     return f'{CLASSIFIERS_PATH}/{file_name}'
 
 
-def load_classifier(classifier_name: str, bow_method: str, bow_normalization: str,
-                    bow_clusters: int, hi_normalization: str) -> object:
-    file_path = convert_classifier_config_to_file_path(classifier_name, bow_method, bow_normalization, bow_clusters, hi_normalization)
+def load_classifier(classifier_name: str, bovw_method: str, bovw_normalization: str,
+                    bovw_clusters: int, hi_normalization: str) -> object:
+    file_path = convert_classifier_config_to_file_path(classifier_name, bovw_method, bovw_normalization, bovw_clusters, hi_normalization)
     if not os.path.exists(file_path):
         raise FileNotFoundError(f'Classifier file not found: {file_path}. Run build_classifiers.py to build the classifiers first')
     return joblib.load(file_path)

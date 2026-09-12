@@ -5,7 +5,7 @@ from pathlib import Path
 from joblib import Parallel, delayed
 from sklearn.cluster import MiniBatchKMeans
 
-from bow_classification import DescriptorsExtractor, preprocess_image
+from bovw_classification import DescriptorsExtractor, preprocess_image
 from config import AID_DATASET_PATH, VOCABULARIES_PATH
 from utils import convert_visual_words_config_to_file_path
 

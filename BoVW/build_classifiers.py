@@ -16,7 +16,7 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
 
-from bow_classification import DescriptorsExtractor, VisualWordsHistogramComputer
+from bovw_classification import DescriptorsExtractor, VisualWordsHistogramComputer
 from build_vocabularies import VISUAL_WORDS_CONFIGS
 from config import CLASSIFIERS_PATH, UCMLU_DATASET_PATH
 from utils import convert_classifier_config_to_file_path, load_visual_words
@@ -46,9 +46,9 @@ def load_ucmlu_images(dataset_path: str = UCMLU_DATASET_PATH):
         yield (label, image)
 
 
-def save_classifier(classifier: object, classifier_name: str, bow_method: str, bow_normalization: str,
-                    bow_clusters: int, hi_normalization: str) -> None:
-    file_path = convert_classifier_config_to_file_path(classifier_name, bow_method, bow_normalization, bow_clusters, hi_normalization)
+def save_classifier(classifier: object, classifier_name: str, bovw_method: str, bovw_normalization: str,
+                    bovw_clusters: int, hi_normalization: str) -> None:
+    file_path = convert_classifier_config_to_file_path(classifier_name, bovw_method, bovw_normalization, bovw_clusters, hi_normalization)
     joblib.dump(classifier, file_path)
 
 
@@ -82,12 +82,12 @@ def print_classifier_evaluations(classifier_name: str, evaluations: list) -> Non
     print('----------------------------------------')
 
 
-def build_classifiers(bow_method: str, bow_normalization: str, bow_clusters: int, hi_normalization: str,
+def build_classifiers(bovw_method: str, bovw_normalization: str, bovw_clusters: int, hi_normalization: str,
                       save_classifiers: bool = True, show_evaluation: bool = True, show_confusion_matrices: bool = True) -> pd.DataFrame:
     if save_classifiers:
         Path(CLASSIFIERS_PATH).mkdir(parents=True, exist_ok=True)
-    descriptors_extractor = DescriptorsExtractor(method=bow_method, normalization=bow_normalization)
-    visual_words = load_visual_words(method=bow_method, normalization=bow_normalization, clusters_number=bow_clusters)
+    descriptors_extractor = DescriptorsExtractor(method=bovw_method, normalization=bovw_normalization)
+    visual_words = load_visual_words(method=bovw_method, normalization=bovw_normalization, clusters_number=bovw_clusters)
     histogram_computer = VisualWordsHistogramComputer(
         descriptors_extractor=descriptors_extractor, visual_words=visual_words, normalization=hi_normalization
     )
@@ -112,9 +112,9 @@ def build_classifiers(bow_method: str, bow_normalization: str, bow_clusters: int
             evaluations.append(evaluate_classifier_fold(fold_classifier, X_test, y_test))
         classifier_performances = pd.concat([classifier_performances, pd.DataFrame([{
             'Classifier': classifier_name,
-            'BoW Method': bow_method,
-            'BoW Normalization': bow_normalization if bow_normalization is not None else 'None',
-            'BoW Clusters': bow_clusters,
+            'BoVW Method': bovw_method,
+            'BoVW Normalization': bovw_normalization if bovw_normalization is not None else 'None',
+            'BoVW Clusters': bovw_clusters,
             'Histogram Normalization': hi_normalization if hi_normalization is not None else 'None',
             'Accuracy': np.mean([e['accuracy'] for e in evaluations]),
             'Precision': np.mean([e['precision'] for e in evaluations]),
@@ -124,7 +124,7 @@ def build_classifiers(bow_method: str, bow_normalization: str, bow_clusters: int
         if save_classifiers:
             final_classifier = clone(classifier)
             final_classifier.fit(X, y)
-            save_classifier(final_classifier, classifier_name, bow_method, bow_normalization, bow_clusters, hi_normalization)
+            save_classifier(final_classifier, classifier_name, bovw_method, bovw_normalization, bovw_clusters, hi_normalization)
         if show_evaluation:
             print_classifier_evaluations(classifier_name, evaluations)
         if show_confusion_matrices:
@@ -139,17 +139,17 @@ def build_classifiers(bow_method: str, bow_normalization: str, bow_clusters: int
     return classifier_performances
 
 
-def build_classifiers_wrapped(bow_method: str, bow_normalization: str, bow_clusters: int, hi_normalization: str,
+def build_classifiers_wrapped(bovw_method: str, bovw_normalization: str, bovw_clusters: int, hi_normalization: str,
                               save_classifiers: bool = True, show_evaluation: bool = True,
                               show_confusion_matrices: bool = True) -> pd.DataFrame:
     # Function used for parallel computation
-    print(f'Building classifiers for bow_method={bow_method}, bow_normalization={bow_normalization}.'
-          f'bow_clusters={bow_clusters}, hi_normalization={hi_normalization}...')
+    print(f'Building classifiers for bovw_method={bovw_method}, bovw_normalization={bovw_normalization}.'
+          f'bovw_clusters={bovw_clusters}, hi_normalization={hi_normalization}...')
     warnings.filterwarnings('ignore', category=ConvergenceWarning)
     classifier_performances =  build_classifiers(
-        bow_method=bow_method,
-        bow_normalization=bow_normalization,
-        bow_clusters=bow_clusters,
+        bovw_method=bovw_method,
+        bovw_normalization=bovw_normalization,
+        bovw_clusters=bovw_clusters,
         hi_normalization=hi_normalization,
         save_classifiers=save_classifiers,
         show_evaluation=show_evaluation,
@@ -161,28 +161,28 @@ def build_classifiers_wrapped(bow_method: str, bow_normalization: str, bow_clust
 def main() -> None:
     classifier_performances = Parallel(n_jobs=-1, prefer='processes')(
         delayed(build_classifiers_wrapped)(
-            bow_method=bow_method,
-            bow_normalization=bow_normalization,
-            bow_clusters=bow_clusters,
+            bovw_method=bovw_method,
+            bovw_normalization=bovw_normalization,
+            bovw_clusters=bovw_clusters,
             hi_normalization=hi_normalization,
             save_classifiers=True,
             show_evaluation=True,
             show_confusion_matrices=False
         )
         for hi_normalization in HISTOGRAM_NORMALIZATIONS
-        for bow_method, bow_normalization, bow_clusters in VISUAL_WORDS_CONFIGS
+        for bovw_method, bovw_normalization, bovw_clusters in VISUAL_WORDS_CONFIGS
     )
     classifier_performances = pd.concat(classifier_performances)
     classifier_performances = classifier_performances.sort_values(by='Accuracy', ascending=False)
     classifier_performances.to_csv(f'{CLASSIFIERS_PATH}/classifier_performances.csv', index=False)
 
 
-def show_classifier_mean_confusion_matrix(bow_method: str = 'SIFT', bow_normalization: str | None = None, bow_clusters: int = 500,
+def show_classifier_mean_confusion_matrix(bovw_method: str = 'SIFT', bovw_normalization: str | None = None, bovw_clusters: int = 500,
                                           hi_normalization: str | None = 'L2', classifier_name: str = 'SVM_RBF') -> None:
     if classifier_name not in CLASSIFIERS:
         raise ValueError(f'Unsupported classifier: {classifier_name}. Use {list(CLASSIFIERS.keys())}')
-    descriptors_extractor = DescriptorsExtractor(method=bow_method, normalization=bow_normalization)
-    visual_words = load_visual_words(method=bow_method, normalization=bow_normalization, clusters_number=bow_clusters)
+    descriptors_extractor = DescriptorsExtractor(method=bovw_method, normalization=bovw_normalization)
+    visual_words = load_visual_words(method=bovw_method, normalization=bovw_normalization, clusters_number=bovw_clusters)
     histogram_computer = VisualWordsHistogramComputer(
         descriptors_extractor=descriptors_extractor, visual_words=visual_words, normalization=hi_normalization
     )
