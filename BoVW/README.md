@@ -1,4 +1,4 @@
-# BoW Image Classification
+# Aerial Scene Classification: BoVW
 
 ## Usage
 
